@@ -10,33 +10,36 @@ pipeline {
 
         stage('Build') {
             steps {
-                bat 'mvn clean compile'
+                dir('Java-CI-demo') {
+                    bat 'mvn clean compile'
+                }
             }
         }
 
         stage('Test') {
             steps {
-                bat 'echo Running Tests'
+                dir('Java-CI-demo') {
+                    bat 'mvn test'
+                }
             }
         }
 
         stage('Package') {
             steps {
-                bat 'mvn package'
+                dir('Java-CI-demo') {
+                    bat 'mvn package -DskipTests'
+                }
             }
         }
 
-        stage('Deploy') {
+        stage('SonarQube Analysis') {
             steps {
-                bat 'if not exist deployment mkdir deployment'
-                bat 'copy target\\*.jar deployment'
+                dir('Java-CI-demo') {
+                    withSonarQubeEnv('SonarQube') {
+                        bat 'mvn sonar:sonar'
+                    }
+                }
             }
-        }
-    }
-
-    post {
-        success {
-            echo 'CI/CD Pipeline Executed Successfully!'
         }
     }
 }
